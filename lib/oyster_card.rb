@@ -6,6 +6,7 @@ class Oyster
     @capacity = 90
     @min_fare = 1
     @entry_station = 0
+    @journies = {}
   end
 
   def top_up(money)
@@ -18,13 +19,19 @@ class Oyster
     @entry_station = entry_station
   end
 
-  def touch_out
+  def touch_out(exit_station)
     deduct(@min_fare)
+    @journies[@entry_station] = exit_station
     @entry_station = 0
   end
 
   def in_journey?
     @entry_station == 0 ? false : true
+  end
+
+
+  def list_trips
+    @journies
   end
 
   private

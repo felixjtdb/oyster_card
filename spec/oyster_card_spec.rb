@@ -1,6 +1,7 @@
 require 'oyster_card.rb'
 describe Oyster do
   let(:entry_station)  { double(:station)}
+  let(:exit_station)  { double(:station)}
   it "money is 0 when oyster card is created" do
     expect(subject.money).to eq 0
   end
@@ -42,13 +43,24 @@ describe Oyster do
     it "touching out changes status of in_journey to false" do
       subject.top_up(1)
       subject.touch_in(entry_station)
-      subject.touch_out
+      subject.touch_out(exit_station)
       expect(subject.in_journey?).to eq false
     end
     it "takes minimum fare away from balance when touching out" do
       subject.top_up(1)
       subject.touch_in(entry_station)
-      expect {subject.touch_out}.to change{subject.money}.by(-subject.min_fare)
+      expect {subject.touch_out(exit_station)}.to change{subject.money}.by(-subject.min_fare)
+    end
+  end
+  describe "#list_trips" do
+    it "list trips is empty upon oyster card creation" do
+      expect(subject.list_trips).to eq({})
+    end
+    it "list trips is shows trip just completed" do
+      subject.top_up(1)
+      subject.touch_in("Honor Oak")
+      subject.touch_out("Shorditch High Street")
+      expect(subject.list_trips).to eq("Honor Oak" => "Shorditch High Street")
     end
   end
 end
