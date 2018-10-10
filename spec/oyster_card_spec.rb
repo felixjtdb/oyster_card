@@ -1,66 +1,69 @@
-require 'oyster_card.rb'
-describe Oyster do
-  let(:entry_station)  { double(:station)}
-  let(:exit_station)  { double(:station)}
-  it "money is 0 when oyster card is created" do
-    expect(subject.money).to eq 0
+require 'oystercard'
+require 'station'
+require 'pry'
+describe Oystercard do
+  let(:entry_station) { double :entry_station }
+  let(:exit_station) { double :exit_station  }
+
+  it 'has a balance' do
+    expect(subject.balance).to eq 0
   end
 
-  describe '#top_up' do
-    it "takes 5 and adds it to the oystercards money store" do
-      subject.top_up(5)
-      expect(subject.money).to eq 5
-    end
-    it "takes 20 and adds it to the oystercards money store" do
-      2.times {subject.top_up(20)}
-      expect(subject.money).to eq 40
-    end
-    it "money is not allowed to be greater than £90" do
-      expect{subject.top_up(91)}.to raise_error "Maximum credit is #{subject.capacity}"
-    end
-    it "cannot top up past £90" do
-      subject.top_up(89)
-      expect{subject.top_up(2)}.to raise_error "Maximum credit is #{subject.capacity}"
-    end
+  it 'increases balance by top up value' do
+    card = Oystercard.new
+    card.top_up(30)
+    expect(card.balance).to eq 30
   end
 
-  describe "#touch_in" do
-    it "touching in changes status of in_journey to true" do
-      subject.top_up(1)
-      subject.touch_in(entry_station)
-      expect(subject.in_journey?).to eq true
-    end
-    it "doesn't allow journey if money is less than min_balance" do
-      expect{subject.touch_in(entry_station)}.to raise_error 'Not enough money'
-    end
-    it "remembers station where we touched in" do
-      subject.top_up(1)
-      subject.touch_in(entry_station)
-      expect(subject.entry_station).to eq entry_station
-    end
+  it 'has a limit of £90' do
+    card = Oystercard.new(90)
+    expect { card.top_up(10) }.to raise_error "Unable to top up, maximum #{Oystercard::LIMIT}"
   end
-  describe "#touch_out" do
-    it "touching out changes status of in_journey to false" do
-      subject.top_up(1)
-      subject.touch_in(entry_station)
-      subject.touch_out(exit_station)
-      expect(subject.in_journey?).to eq false
-    end
-    it "takes minimum fare away from balance when touching out" do
-      subject.top_up(1)
-      subject.touch_in(entry_station)
-      expect {subject.touch_out(exit_station)}.to change{subject.money}.by(-subject.min_fare)
-    end
+
+  it "raises an error if balance exceeds limit" do
+    card = Oystercard.new
+    expect { card.top_up(100) }.to raise_error "Unable to top up, maximum #{Oystercard::LIMIT}"
   end
-  describe "#list_trips" do
-    it "list trips is empty upon oyster card creation" do
-      expect(subject.list_trips).to eq({})
-    end
-    it "list trips is shows trip just completed" do
-      subject.top_up(1)
-      subject.touch_in("Honor Oak")
-      subject.touch_out("Shorditch High Street")
-      expect(subject.list_trips).to eq("Honor Oak" => "Shorditch High Street")
-    end
+
+  it 'deducts an amount from balance' do
+    card = Oystercard.new(10)
+    card.deduct(5)
+    expect(card.balance).to eq 5
+  end
+
+  it 'should not be in_journey before touching in' do
+    card = Oystercard.new
+    expect(card.current.in_journey?).to eq false
+  end
+
+  it 'should be in_jouney when touching in' do
+    card = Oystercard.new(5)
+    card.touch_in(entry_station)
+    expect(card.current.in_journey?).to eq true
+  end
+
+  it 'should be in_jouney when touching in' do
+    card = Oystercard.new(2)
+    card.touch_in(entry_station)
+    card.touch_out(exit_station)
+    expect(card.current.in_journey?).to eq false
+  end
+
+  it 'raises an error if there is an insufficient balance upon touch_in (£1)' do
+    card = Oystercard.new
+    expect { card.touch_in(entry_station) }.to raise_error "Insufficient funds - less then #{Oystercard::MINIMUM}"
+  end
+
+  it "should reduce the balance by minimum fare when touching out" do
+    card = Oystercard.new(2)
+    card.touch_in(entry_station)
+    expect { card.touch_out(exit_station) }.to change { card.balance }.by(-Oystercard::MINIMUM)
+  end
+
+  it 'stores a journey' do
+    card = Oystercard.new(10)
+    card.touch_in(entry_station)
+    card.touch_out(exit_station)
+    expect(card.list_journeys).to eq ([card.current])
   end
 end

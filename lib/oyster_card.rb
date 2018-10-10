@@ -1,43 +1,42 @@
-class Oyster
-  attr_reader :money, :capacity, :min_fare, :entry_station
+require_relative 'station'
+require_relative 'journey'
 
-  def initialize
-    @money = 0
-    @capacity = 90
-    @min_fare = 1
-    @entry_station = 0
-    @journies = {}
+class Oystercard
+
+  attr_reader :balance, :current
+
+  LIMIT = 90
+  MINIMUM = 1
+
+  def initialize(balance = 0)
+    @balance = balance
+    @journeys = []
+    @current = Journey.new
   end
 
-  def top_up(money)
-    fail "Maximum credit is #{@capacity}" if (@money + money) > @capacity
-    @money += money
+  def list_journeys
+    @journeys
+  end
+
+  def top_up(amount)
+    raise "Unable to top up, maximum #{LIMIT}" if @balance + amount >= LIMIT
+    @balance += amount
+  end
+
+  def deduct(amount)
+    @balance -= amount
   end
 
   def touch_in(entry_station)
-    fail "Not enough money" if @money < @min_fare
-    @entry_station = entry_station
+    raise "Insufficient funds - less then #{MINIMUM}" if @balance < MINIMUM
+    @current = Journey.new
+    @current.entry_station = entry_station
   end
 
   def touch_out(exit_station)
-    deduct(@min_fare)
-    @journies[@entry_station] = exit_station
-    @entry_station = 0
-  end
-
-  def in_journey?
-    @entry_station == 0 ? false : true
-  end
-
-
-  def list_trips
-    @journies
-  end
-
-  private
-
-  def deduct(fare)
-    @money -= fare
+    @current.exit_station = exit_station
+    @journeys.push(current)
+    @balance -= @current.fare
   end
 
 end
