@@ -1,4 +1,4 @@
-require 'oystercard'
+require 'oyster_card'
 require 'station'
 require 'pry'
 describe Oystercard do
@@ -64,6 +64,6 @@ describe Oystercard do
     card = Oystercard.new(10)
     card.touch_in(entry_station)
     card.touch_out(exit_station)
-    expect(card.list_journeys).to eq ([card.current])
+    expect(card.journeys).to eq ([card.current])
   end
 end

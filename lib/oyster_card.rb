@@ -3,7 +3,7 @@ require_relative 'journey'
 
 class Oystercard
 
-  attr_reader :balance, :current
+  attr_reader :balance, :current, :journeys
 
   LIMIT = 90
   MINIMUM = 1
@@ -12,10 +12,6 @@ class Oystercard
     @balance = balance
     @journeys = []
     @current = Journey.new
-  end
-
-  def list_journeys
-    @journeys
   end
 
   def top_up(amount)

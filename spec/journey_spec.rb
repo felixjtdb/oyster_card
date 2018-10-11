@@ -1,5 +1,5 @@
 require 'journey'
-require 'oystercard'
+require 'oyster_card'
 
 describe Journey do
   let(:entry_station) { double :entry_station }
@@ -8,7 +8,7 @@ describe Journey do
   it 'a new journey has no entry station' do
     expect(subject.entry_station).to eq nil
   end
-  it 'a new journey has no entry station' do
+  it 'a new journey has no exit station' do
     expect(subject.exit_station).to eq nil
   end
   describe '#fare' do
